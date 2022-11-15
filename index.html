@@ -1,0 +1,94 @@
+<html>
+
+<head>
+	<title>iHospital Connect</title>
+	<link rel="stylesheet" href="css/siimple.min.css">
+	<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+	<div class="siimple-content ">
+		<div class="siimple--px-5 ">
+			<div class="siimple-h4 siimple--text-normal siimple--mb-1" style="text-align:center;">
+				iHospital Connect
+			</div>
+
+			<div class="siimple-tabs siimple-tabs--boxed">
+				<div id="tabWatchToken" onclick="onClickTab('tabWatchToken')" data-tab="tab-watch-token"
+					class="siimple-tabs-item">
+					ตรวจสอบสิทธิ์ สปสช.
+				</div>
+				<div id="tabSetting" onclick="onClickTab('tabSetting')" data-tab="tab-setting"
+					class="siimple-tabs-item siimple-tabs-item--selected">Settings
+				</div>
+			</div>
+
+			<div class="tabcontents">
+				<div class="tabcontent" id="tab-watch-token">
+					<div class="siimple-field">
+						<label class="siimple-label">Log message: </label><br>
+						<textarea rows="8" id="txt-log" class="siimple-textarea siimple-textarea--fluid"></textarea>
+					</div>
+					<div class="siimple-field">
+						<button id="btn-start"
+							class="siimple-btn siimple-btn--default siimple-btn--fluid siimple--text-bold">
+							Start </button>
+						<button style="display: none;" id="btn-stop"
+							class="siimple-btn siimple-btn--primary siimple-btn--fluid siimple--text-bold">
+							Stop </button>
+					</div>
+				</div>
+
+				<div class="tabcontent" id="tab-setting">
+
+
+					<div class="siimple-grid-row">
+						<div class="siimple-grid-col siimple-grid-col--6">
+
+							<div class="siimple-field-label">MQTT Server</div>
+							<input id="mqtt-server" type="text" class="siimple-input siimple-input--fluid"
+								placeholder="192.168.1.1">
+
+						</div>
+						<div class="siimple-grid-col siimple-grid-col--6">
+
+							<div class="siimple-field-label">Device ID</div>
+							<input id="mqtt-topic-name" type="text" class="siimple-input siimple-input--fluid"
+								placeholder="baby">
+
+						</div>
+					</div>
+					<div class="siimple-grid-row">
+						<div class="siimple-grid-col siimple-grid-col--6">
+
+							<div class="siimple-field-label">MQTT Username</div>
+							<input id="mqtt-username" type="text" class="siimple-input siimple-input--fluid"
+								placeholder="username">
+
+						</div>
+						<div class="siimple-grid-col siimple-grid-col--6">
+
+							<div class="siimple-field-label">MQTT Password</div>
+							<input id="mqtt-password" type="password" class="siimple-input siimple-input--fluid"
+								placeholder="password">
+
+						</div>
+					</div>
+
+					<div class="siimple-field">
+						<button id="btn-save-setting" class="siimple-btn siimple-btn--primary  siimple--text-bold"> Save
+							setting</button>
+						<button id="btn-quit" class="siimple-btn siimple-btn--grey  siimple--text-bold">
+							Quit</button>
+					</div>
+				</div>
+			</div>
+
+			<div style="text-align: center; font-size: 10px; "><a style="color:gray;  text-decoration: none;"
+					target="_bank" href="https://github.com/dixonsatit/watch-nhso-token" id="app-version"></a></div>
+		</div>
+	</div>
+	<script src="renderer.js"></script>
+</body>
+
+</html>
