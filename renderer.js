@@ -11,8 +11,7 @@ var mqttServer = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttTopicName = machineIdSync({ original: true })
-var watchFileStatus = false;
-var apiUrl = 'http://10.3.42.174:8189';
+var apiUrl = 'http://127.0.0.1:8189';
 
 document.getElementById("app-version").innerHTML = 'iHosConnect: Version: ' + appVersion;
 document.getElementById("app-version").addEventListener('click', (event) => {
