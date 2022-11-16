@@ -1,6 +1,6 @@
 
 'use strict';
-const { app, BrowserWindow, remote } = require('electron');
+const remote = require('electron').remote;
 const { machineId, machineIdSync } = require('node-machine-id');
 const mqtt = require('mqtt');
 const axios = require('axios');
@@ -11,7 +11,7 @@ var mqttServer = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttTopicName = machineIdSync({ original: true })
-var apiUrl = 'http://127.0.0.1:8189';
+var apiUrl = 'http://10.3.42.174:8189';
 
 document.getElementById("app-version").innerHTML = 'iHosConnect: Version: ' + appVersion;
 document.getElementById("app-version").addEventListener('click', (event) => {
@@ -38,10 +38,8 @@ document.getElementById('btn-stop').addEventListener('click', () => {
 });
 
 document.getElementById('btn-quit').addEventListener('click', () => {
-	remote.getCurrentWindow().close();
+	require('electron').remote.getCurrentWindow().close();
 });
-
-
 
 function onClickTab(tabName) {
 	const activeTab = document.getElementById(tabName);

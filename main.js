@@ -9,10 +9,15 @@ const mb = menubar({
 			contextIsolation: false,
 			enableRemoteModule: true
 		}
-	}
+	},
+	icon: 'icon.png'
 });
 
 mb.on('ready', () => {
 	console.log('Menubar app is ready.');
 });
+
+mb.app.setLoginItemSettings({
+	openAtLogin: true
+})
 
