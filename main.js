@@ -10,7 +10,7 @@ const mb = menubar({
 			enableRemoteModule: true
 		}
 	},
-	icon: 'icon.png'
+	icon: 'win-icon/icon.png'
 });
 
 mb.on('ready', () => {

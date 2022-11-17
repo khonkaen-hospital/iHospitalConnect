@@ -10,7 +10,7 @@ var mqttServer = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttTopicName = machineIdSync({ original: true })
-var apiUrl = 'http://10.3.42.174:8189';
+var apiUrl = 'http://127.0.0.1:8189';
 
 document.getElementById("app-version").innerHTML = 'iHosConnect: Version: ' + appVersion;
 document.getElementById("app-version").addEventListener('click', (event) => {
@@ -196,13 +196,13 @@ function getRead() {
 			// handle error
 			console.log(error);
 			let message = '';
-			const errorData = error.response.data;
-			if (errorData.status === 418) {
+			const errorData = error?.response?.data;
+			if (errorData?.status === 418) {
 				message = 'ไม่พบเครื่องอ่าน Smart card กรุณาเสียบเครื่องอ่านใหม่อีกครั้ง!!!';
-			} else if (errorData.status === 500) {
+			} else if (errorData?.status === 500) {
 				message = 'กรุณาเสียบบัตรประชาชนของผู้ป่วย!!!';
 			} else {
-				message = errorData.message;
+				message = errorData?.message || error?.message;
 			}
 
 			client.publish('response/read/' + mqttTopicName, JSON.stringify({
