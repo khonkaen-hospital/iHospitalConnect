@@ -1,6 +1,5 @@
 
 'use strict';
-const remote = require('electron').remote;
 const { machineId, machineIdSync } = require('node-machine-id');
 const mqtt = require('mqtt');
 const axios = require('axios');
@@ -80,6 +79,7 @@ function saveSetting() {
 	localStorage.setItem('mqttUsername', mqttUsername);
 	localStorage.setItem('mqttPassword', mqttPassword);
 	localStorage.setItem('mqttTopicName', mqttTopicName);
+	alert('บันทึกเสร็จเรียบร้อย');
 }
 
 function initTabs() {
