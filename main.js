@@ -11,7 +11,7 @@ const apiUrl = 'http://127.0.0.1:8189';
 autoUpdater.logger = electronLog;
 autoUpdater.logger.transports.file.level = 'info';
 electronLog.info('App starting...');
-log('App starting...');
+
 
 var client = null;
 
@@ -42,6 +42,7 @@ const mb = menubar({
 });
 
 mb.on('ready', () => {
+	log('App starting...');
 	console.log('Menubar app is ready.');
 	autoUpdater.checkForUpdatesAndNotify();
 });
@@ -375,6 +376,7 @@ autoUpdater.on('download-progress', (progressObj) => {
 	log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
 	log(log_message);
 })
+
 autoUpdater.on('update-downloaded', (info) => {
 	log('Update downloaded');
 });
