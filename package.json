@@ -1,13 +1,13 @@
 {
 	"name": "ihospitalconnect",
-	"version": "1.0.0",
+	"version": "1.1.1",
 	"description": "",
 	"main": "main.js",
 	"scripts": {
 		"start": "electron .",
 		"pack": "electron-builder --dir",
 		"dist": "electron-builder",
-		"publish": "electron-builder --win -p always",
+		"publish": "electron-builder --mac --win -p always",
 		"postinstall": "electron-builder install-app-deps"
 	},
 	"author": "Sathit Seethaphon<dixonsatit@gmail.com>",
@@ -50,3 +50,4 @@
 		"electron-builder": "^23.6.0"
 	}
 }
+

@@ -4,7 +4,6 @@ var mqttHostName = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttPort = null;
-var apiUrl = 'http://127.0.0.1:8189';
 
 document.getElementById('btn-quit').addEventListener('click', () => {
 	window.electronAPI.quit();

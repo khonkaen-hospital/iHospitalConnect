@@ -7,10 +7,11 @@ const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
 const { autoUpdater } = require("electron-updater");
-
+const apiUrl = 'http://127.0.0.1:8189';
 autoUpdater.logger = electronLog;
 autoUpdater.logger.transports.file.level = 'info';
 electronLog.info('App starting...');
+log('App starting...');
 
 var client = null;
 
@@ -95,7 +96,6 @@ function setSettings(data) {
 
 function getSettings() {
 	const settings = store.get('settings');
-	console.log('getSettings', settings);
 	return settings;
 }
 
@@ -357,32 +357,26 @@ function log(data) {
 	windows.webContents.send('logs', data);
 }
 
-function sendStatusToWindow(text) {
-	electronLog.info(text);
-	const windows = mb.window;
-	windows.webContents.send('message', text);
-}
-
 autoUpdater.on('checking-for-update', () => {
-	sendStatusToWindow('Checking for update...');
+	log('Checking for update...');
 })
 autoUpdater.on('update-available', (info) => {
-	sendStatusToWindow('Update available.');
+	log('Update available.');
 })
 autoUpdater.on('update-not-available', (info) => {
-	sendStatusToWindow('Update not available.');
+	log('Update not available.');
 })
 autoUpdater.on('error', (err) => {
-	sendStatusToWindow('Error in auto-updater. ' + err);
+	log('Error in auto-updater. ' + err);
 })
 autoUpdater.on('download-progress', (progressObj) => {
 	let log_message = "Download speed: " + progressObj.bytesPerSecond;
 	log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
 	log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-	sendStatusToWindow(log_message);
+	log(log_message);
 })
 autoUpdater.on('update-downloaded', (info) => {
-	sendStatusToWindow('Update downloaded');
+	log('Update downloaded');
 });
 
 
