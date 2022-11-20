@@ -121,7 +121,6 @@ async function autoStartMQTT() {
 		document.getElementById('btn-start').style.display = 'none';
 		document.getElementById('btn-stop').style.display = 'block';
 	}
-
 }
 
 async function appInit() {
