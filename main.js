@@ -42,7 +42,6 @@ const mb = menubar({
 });
 
 mb.on('ready', () => {
-	log('App starting...');
 	console.log('Menubar app is ready.');
 	autoUpdater.checkForUpdatesAndNotify();
 });
