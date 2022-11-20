@@ -6,14 +6,15 @@ const { menubar } = require('menubar');
 const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
-const { autoUpdater } = require("electron-updater");
-const apiUrl = 'http://127.0.0.1:8189';
-autoUpdater.logger = electronLog;
-autoUpdater.logger.transports.file.level = 'info';
 electronLog.info('App starting...');
-
-
+const apiUrl = 'http://127.0.0.1:8189';
 var client = null;
+
+require('update-electron-app')({
+	repo: 'khonkaen-hospital/iHospitalConnect',
+	updateInterval: '1 hour',
+	logger: electronLog
+});
 
 const Store = require('electron-store');
 const schema = {
@@ -43,7 +44,6 @@ const mb = menubar({
 
 mb.on('ready', () => {
 	console.log('Menubar app is ready.');
-	autoUpdater.checkForUpdatesAndNotify();
 });
 
 mb.app.setLoginItemSettings({
@@ -107,7 +107,6 @@ function resetSettings() {
 
 function startMQTT() {
 	const settings = getSettings();
-	console.log(settings);
 	if (!settings) return;
 
 	log('iHosConnect: กำลังเชื่อมต่อ MQTT...');
@@ -158,7 +157,6 @@ function startMQTT() {
 		// message is Buffer
 		console.log('on message of ', topic, message.toString());
 		const data = JSON.parse(message.toString());
-		console.log(data);
 
 		if (topic === 'request/read/' + settings.mqttTopicName) {
 			log('ihospital: ขออ่านบัตรประชาชนและตรวจสอบสิทธิ');
@@ -352,33 +350,12 @@ function getApiPrefrence() {
 		});
 }
 
-function log(data) {
+function log(message) {
 	const windows = mb.window;
-	windows.webContents.send('logs', data);
+	windows.webContents.send('logs', message);
+	electronLog.info(message);
 }
 
-autoUpdater.on('checking-for-update', () => {
-	log('Checking for update...');
-})
-autoUpdater.on('update-available', (info) => {
-	log('Update available.');
-})
-autoUpdater.on('update-not-available', (info) => {
-	log('Update not available.');
-})
-autoUpdater.on('error', (err) => {
-	log('Error in auto-updater. ' + err);
-})
-autoUpdater.on('download-progress', (progressObj) => {
-	let log_message = "Download speed: " + progressObj.bytesPerSecond;
-	log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
-	log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
-	log(log_message);
-})
-
-autoUpdater.on('update-downloaded', (info) => {
-	log('Update downloaded');
-});
 
 
 
