@@ -119,6 +119,7 @@ async function autoStartMQTT() {
 		this.startMQTT();
 		document.getElementById('btn-start').style.display = 'none';
 		document.getElementById('btn-stop').style.display = 'block';
+		console.log('autoStartMQTT');
 	}
 }
 

@@ -7,7 +7,7 @@ const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
 electronLog.info('App starting...');
-const apiUrl = 'http://127.0.0.1:8189';
+const apiUrl = 'http://10.3.42.174:8189';
 var client = null;
 
 require('update-electron-app')({
@@ -39,7 +39,8 @@ const mb = menubar({
 			preload: path.join(__dirname, 'preload.js'),
 		}
 	},
-	icon: 'win-icon/icon.png'
+	icon: path.join(__dirname, 'win-icon/icon.png'),
+	preloadWindow: true
 });
 
 mb.on('ready', () => {
@@ -110,6 +111,7 @@ function startMQTT() {
 	if (!settings) return;
 
 	log('iHosConnect: กำลังเชื่อมต่อ MQTT...');
+
 	client = mqtt.connect(`mqtt://${settings.mqttHostName}`, {
 		username: settings.mqttUsername,
 		password: settings.mqttPassword,
@@ -120,7 +122,6 @@ function startMQTT() {
 	client.on('connect', () => {
 		log('iHosConnect: เชื่อมต่อ MQTT สำเร็จ');
 		console.log('mqtt is connect');
-
 		client.subscribe('request/read/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
 				console.log('subscribe request/read/' + settings.mqttTopicName);
@@ -208,6 +209,7 @@ function startMQTT() {
 }
 
 function stopMQTT() {
+	console.log('stopMQTT: disconnect');
 	try {
 		client.disconnect();
 	} catch (error) {
@@ -221,7 +223,6 @@ function getRead() {
 		.then((response) => {
 			// handle success
 			log('NHSO SmartCard Agent: สำเร็จ สปสช. ตอบกลับข้อมูลสิทธิการรักษา');
-			console.log(response);
 			client.publish('response/read/' + mqttTopicName, JSON.stringify({
 				success: true,
 				data: response.data
