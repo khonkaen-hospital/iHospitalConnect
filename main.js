@@ -27,7 +27,6 @@ const schema = {
 	}
 };
 const store = new Store(schema);
-
 const mb = menubar({
 	browserWindow: {
 		width: 700,
