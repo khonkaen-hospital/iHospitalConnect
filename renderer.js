@@ -111,6 +111,7 @@ function startMQTT() {
 
 function stopMQTT() {
 	window.electronAPI.stopMQTT();
+	document.getElementById('title').style.color = 'red';
 }
 
 async function autoStartMQTT() {
@@ -127,8 +128,17 @@ async function appInit() {
 	await getInitData();
 	initTabs();
 	autoStartMQTT();
+
 	window.electronAPI.setLogs((event, value) => {
 		setLog(value);
+	});
+
+	window.electronAPI.mqttStatus((event, value) => {
+		if (value == 1) {
+			document.getElementById('title').style.color = 'green';
+		} else {
+			document.getElementById('title').style.color = 'red';
+		}
 	});
 }
 

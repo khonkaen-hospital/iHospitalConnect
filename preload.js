@@ -10,5 +10,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 	initData: () => ipcRenderer.invoke('initData'),
 	getSettings: () => ipcRenderer.invoke('getSettings'),
 	setSettings: (data) => ipcRenderer.invoke('setSettings', data),
-	setLogs: (callback) => ipcRenderer.on('logs', callback)
+	setLogs: (callback) => ipcRenderer.on('logs', callback),
+	mqttStatus: (callback) => ipcRenderer.on('mqttStatus', callback)
 })

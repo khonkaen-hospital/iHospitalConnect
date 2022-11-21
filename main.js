@@ -120,6 +120,7 @@ function startMQTT() {
 
 	client.on('connect', () => {
 		log('iHosConnect: เชื่อมต่อ MQTT สำเร็จ');
+		mqttStatus(1);
 		console.log('mqtt is connect');
 		client.subscribe('request/read/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
@@ -184,26 +185,31 @@ function startMQTT() {
 	client.on('error', (err) => {
 		console.log(err);
 		log('ihospital: ไม่สามารถเชื่อมต่อ MQTT ได้');
+		mqttStatus(0);
 	})
 
 	client.on('close', function () {
 		console.log('mqtt closed');
 		log('ihospital: ปิดการเชื่อมต่อ MQTT');
+		mqttStatus(0);
 	});
 
 	client.on('offline', function () {
 		console.log('offline');
 		log('ihospital: MQTT ไม่สามารถติดต่อได้');
+		mqttStatus(0);
 	});
 
 	client.on('reconnect', function () {
 		console.log('reconnect');
 		log('ihospital: กำลัง reconnect กับ MQTT อีกครั้ง');
+		mqttStatus(0);
 	});
 
 	client.on('disconnect', function () {
 		console.log('disconnect');
 		log('ihospital: ยกเลิกการเชื่อมต่อกับ MQTT สำเร็จ');
+		mqttStatus(0);
 	});
 }
 
@@ -354,6 +360,10 @@ function log(message) {
 	const windows = mb.window;
 	windows.webContents.send('logs', message);
 	electronLog.info(message);
+}
+function mqttStatus(status) {
+	const win = mb.window;
+	win.webContents.send('mqttStatus', status); // 1 online, 0 offline
 }
 
 
