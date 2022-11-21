@@ -11,7 +11,10 @@
 		"postinstall": "electron-builder install-app-deps"
 	},
 	"author": "Sathit Seethaphon<dixonsatit@gmail.com>",
-	"repository": "https://github.com/khonkaen-hospital/iHospitalConnect.git",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/khonkaen-hospital/iHospitalConnect.git"
+	},
 	"license": "MIT",
 	"build": {
 		"appId": "kkh.iHospitalConnect",
