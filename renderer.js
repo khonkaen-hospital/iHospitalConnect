@@ -112,6 +112,7 @@ function startMQTT() {
 function stopMQTT() {
 	window.electronAPI.stopMQTT();
 	document.getElementById('title').style.color = 'red';
+	document.getElementById('title').innerHTML = 'iHospital Connect (OFFLINE)'
 }
 
 async function autoStartMQTT() {
@@ -136,8 +137,10 @@ async function appInit() {
 	window.electronAPI.mqttStatus((event, value) => {
 		if (value == 1) {
 			document.getElementById('title').style.color = 'green';
+			document.getElementById('title').innerHTML = 'iHospital Connect (ONLINE)'
 		} else {
 			document.getElementById('title').style.color = 'red';
+			document.getElementById('title').innerHTML = 'iHospital Connect (OFFLINE)'
 		}
 	});
 }
