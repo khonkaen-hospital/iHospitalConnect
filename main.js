@@ -7,7 +7,7 @@ const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
 electronLog.info('App starting...');
-const apiUrl = 'http://10.3.42.174:8189';
+const apiUrl = 'http://127.0.0.1:8189';
 var client = null;
 
 require('update-electron-app')({
