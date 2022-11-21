@@ -4,6 +4,7 @@ var mqttHostName = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttPort = null;
+var ipAddress = '';
 
 document.getElementById('btn-quit').addEventListener('click', () => {
 	window.electronAPI.quit();
@@ -102,7 +103,9 @@ async function getInitData() {
 	const initData = await window.electronAPI.initData();
 	appVersion = initData.version;
 	mqttTopicName = initData.deviceID;
+	ipAddress = initData.ipAddress;
 	document.getElementById("app-version").innerHTML = 'iHosConnect v. ' + appVersion;
+	document.getElementById("ipAddress").innerHTML = 'IP Address:  ' + ipAddress;
 }
 
 function startMQTT() {

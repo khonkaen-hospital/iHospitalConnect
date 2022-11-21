@@ -10,6 +10,10 @@ electronLog.info('App starting...');
 const apiUrl = 'http://127.0.0.1:8189';
 var client = null;
 
+var ip = require('ip');
+const ipAddress = ip.address();
+electronLog.info('ip address: ' + ipAddress);
+
 require('update-electron-app')({
 	repo: 'khonkaen-hospital/iHospitalConnect',
 	updateInterval: '1 hour',
@@ -54,7 +58,8 @@ mb.app.whenReady().then(() => {
 	ipcMain.handle('initData', async () => {
 		return {
 			version: app.getVersion(),
-			deviceID: mqttTopicName
+			deviceID: mqttTopicName,
+			ipAddress: ipAddress
 		}
 	});
 
