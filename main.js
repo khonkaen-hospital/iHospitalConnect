@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { machineId, machineIdSync } = require('node-machine-id');
 const mqtt = require('mqtt');
 const axios = require('axios');
@@ -14,11 +14,10 @@ var ip = require('ip');
 const ipAddress = ip.address();
 electronLog.info('ip address: ' + ipAddress);
 
-require('update-electron-app')({
-	repo: 'khonkaen-hospital/iHospitalConnect',
-	updateInterval: '1 hour',
-	logger: electronLog
-});
+const { autoUpdater } = require("electron-updater");
+autoUpdater.logger = electronLog;
+autoUpdater.autoDownload = false;
+autoUpdater.logger.transports.file.level = 'info';
 
 const Store = require('electron-store');
 const schema = {
@@ -30,6 +29,7 @@ const schema = {
 		mqttTopicName: { type: 'string' }
 	}
 };
+
 const store = new Store(schema);
 const mb = menubar({
 	browserWindow: {
@@ -48,6 +48,7 @@ const mb = menubar({
 
 mb.on('ready', () => {
 	console.log('Menubar app is ready.');
+	autoUpdater.checkForUpdatesAndNotify();
 });
 
 mb.app.setLoginItemSettings({
@@ -360,6 +361,28 @@ function getApiPrefrence() {
 			// always executed
 		});
 }
+
+autoUpdater.on('checking-for-update', () => {
+	log('Checking for update...');
+})
+autoUpdater.on('update-available', (info) => {
+	log('Update available.');
+})
+autoUpdater.on('update-not-available', (info) => {
+	log('Update not available.');
+})
+autoUpdater.on('error', (err) => {
+	log('Error in auto-updater. ' + err);
+})
+autoUpdater.on('download-progress', (progressObj) => {
+	let log_message = "Download speed: " + progressObj.bytesPerSecond;
+	log_message = log_message + ' - Downloaded ' + progressObj.percent + '%';
+	log_message = log_message + ' (' + progressObj.transferred + "/" + progressObj.total + ')';
+	log(log_message);
+})
+autoUpdater.on('update-downloaded', (info) => {
+	log('Update downloaded');
+});
 
 function log(message) {
 	const windows = mb.window;
