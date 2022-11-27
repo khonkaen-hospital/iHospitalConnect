@@ -16,7 +16,7 @@ electronLog.info('ip address: ' + ipAddress);
 
 const { autoUpdater } = require("electron-updater");
 autoUpdater.logger = electronLog;
-autoUpdater.autoDownload = false;
+autoUpdater.autoDownload = true;
 autoUpdater.logger.transports.file.level = 'info';
 
 const Store = require('electron-store');
