@@ -7,7 +7,7 @@ const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
 electronLog.info('App starting...');
-const apiUrl = 'http://127.0.0.1:8189';
+const apiUrl = 'http://192.168.1.122:8189';
 var client = null;
 
 var ip = require('ip');
@@ -26,7 +26,8 @@ const schema = {
 		mqttUsername: { type: 'string' },
 		mqttPassword: { type: 'string' },
 		mqttPort: { type: 'string' },
-		mqttTopicName: { type: 'string' }
+		mqttTopicName: { type: 'string' },
+		readImageFlag: { type: 'string' }
 	}
 };
 
@@ -91,17 +92,20 @@ ipcMain.on('resetSetting', () => {
 });
 
 function setSettings(data) {
+	console.log('saveSetting', data);
 	store.set('settings', {
 		mqttTopicName: data.mqttTopicName,
 		mqttHostName: data.mqttHostName,
 		mqttUsername: data.mqttUsername,
 		mqttPassword: data.mqttPassword,
 		mqttPort: data.mqttPort,
+		readImageFlag: data.readImageFlag,
 	});
 }
 
 function getSettings() {
 	const settings = store.get('settings');
+	console.log('settings', settings);
 	return settings;
 }
 
@@ -130,31 +134,31 @@ function startMQTT() {
 		console.log('mqtt is connect');
 		client.subscribe('request/read/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
-				console.log('subscribe request/read/' + settings.mqttTopicName);
+				log('subscribe request/read/' + settings.mqttTopicName);
 			}
 		});
 
 		client.subscribe('request/read-card-only/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
-				console.log('subscribe request/read-card-only/' + settings.mqttTopicName);
+				log('subscribe request/read-card-only/' + settings.mqttTopicName);
 			}
 		});
 
 		client.subscribe('request/confirm-save/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
-				console.log('subscribe request/confirm-save/' + settings.mqttTopicName);
+				log('subscribe request/confirm-save/' + settings.mqttTopicName);
 			}
 		});
 
 		client.subscribe('request/api-preference/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
-				console.log('subscribe request/api-preference/' + settings.mqttTopicName);
+				log('subscribe request/api-preference/' + settings.mqttTopicName);
 			}
 		});
 
 		client.subscribe('request/latest-authen-code/' + settings.mqttTopicName, { qos: 2 }, (err) => {
 			if (!err) {
-				console.log('subscribe request/latest-authen-code/' + settings.mqttTopicName);
+				log('subscribe request/latest-authen-code/' + settings.mqttTopicName);
 			}
 		});
 	})
@@ -162,9 +166,15 @@ function startMQTT() {
 
 	client.on('message', (topic, message) => {
 		// message is Buffer
-		console.log('on message of ', topic, message.toString());
-		const data = JSON.parse(message.toString());
-
+		console.log('on message of ', topic);
+		console.log('on message  ', message.toString());
+		let data = undefined;
+		try {
+			data = JSON.parse(message.toString());
+		} catch (error) {
+			log('error:' + error.getMessage());
+		}
+		log('topic:' + topic);
 		if (topic === 'request/read/' + settings.mqttTopicName) {
 			log('ihospital: ขออ่านบัตรประชาชนและตรวจสอบสิทธิ');
 			getRead();
@@ -229,19 +239,20 @@ function stopMQTT() {
 }
 
 function getRead() {
+	const settings = getSettings();
+	const readImageFlag = settings.readImageFlag ? 'true' : 'false';
+	const topicName = 'response/read/' + settings.mqttTopicName;
+	log('topic: ' + topicName);
 	log('NHSO SmartCard Agent: กำลังอ่านข้อมูลจากบัตรประชาชนและส่งตรวจสอบสิทธิที่ สปสช.');
-	axios.get(apiUrl + '/api/smartcard/read?readImageFlag=true')
+	axios.get(apiUrl + '/api/smartcard/read?readImageFlag=' + readImageFlag)
 		.then((response) => {
-			// handle success
 			log('NHSO SmartCard Agent: สำเร็จ สปสช. ตอบกลับข้อมูลสิทธิการรักษา');
-			client.publish('response/read/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: true,
 				data: response.data
-			}));
-			log('NHSO SmartCard Agent: ส่งข้อมูลกลับไปที่ ihospital');
+			}))
 		})
 		.catch((error) => {
-			// handle error
 			console.log(error);
 			let message = '';
 			const errorData = error?.response?.data;
@@ -255,7 +266,35 @@ function getRead() {
 
 			log('NHSO SmartCard Agent: ' + message);
 
-			client.publish('response/read/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
+				success: false,
+				message: message
+			}));
+		})
+		.finally(() => {
+			// always executed
+
+		});
+}
+
+function getReadCardOnly() {
+	const settings = getSettings();
+	const readImageFlag = settings.readImageFlag ? 'true' : 'false';
+	const topicName = 'response/read-card-only/' + settings.mqttTopicName;
+	log('NHSO SmartCard Agent: กำลังอ่านข้อมูลจากบัตรประชาชน');
+	axios.get(apiUrl + '/api/smartcard/read-card-only?readImageFlag=' + readImageFlag)
+		.then((response) => {
+			console.log(response);
+			client.publish(topicName, JSON.stringify({
+				success: true,
+				data: response.data
+			}))
+		})
+		.catch((error) => {
+			console.log(error);
+			const errorData = error?.response?.data;
+			const message = errorData?.message || error?.message;
+			client.publish(topicName, JSON.stringify({
 				success: false,
 				message: message
 			}));
@@ -265,41 +304,26 @@ function getRead() {
 		});
 }
 
-function getReadCardOnly() {
-	log('NHSO SmartCard Agent: กำลังอ่านข้อมูลจากบัตรประชาชน');
-	axios.get(apiUrl + '/api/smartcard/read-card-only?readImageFlag=true')
-		.then((response) => {
-			// handle success
-			console.log(response);
-			client.publish('response/read-card-only/' + mqttTopicName, 'Hello mqtt')
-		})
-		.catch((error) => {
-			// handle error
-			console.log(error);
-			client.publish('response/read-card-only/' + mqttTopicName, 'error')
-		})
-		.finally(() => {
-			// always executed
-		});
-}
-
 function getReadConfirmSave(data) {
+	console.log('confirmSave', data);
+	const settings = getSettings();
+	const topicName = 'response/confirm-save/' + settings.mqttTopicNam;
 	log('NHSO SmartCard Agent: รับข้อมูลและส่งต่อขอ authen code สปสช');
 	axios.post(apiUrl + '/api/nhso-service/confirm-save', data)
 		.then((response) => {
 			log('NHSO SmartCard Agent: Authen สำเร็จ ส่งข้อมูลกลับไปให้ ihospital');
 			console.log(response);
-			client.publish('response/confirm-save/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: true,
 				data: response.data
 			}))
 		})
 		.catch((error) => {
-			// handle error
+			// handle errorg
 			console.log(error);
 			const errorData = error?.response?.data;
 			log('NHSO SmartCard Agent: Authen ไม่สำเร็จ ส่งข้อมูลกลับไปให้ ihospital');
-			client.publish('response/confirm-save/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: false,
 				message: errorData?.error || error?.message,
 				data: errorData?.errors
@@ -311,10 +335,12 @@ function getReadConfirmSave(data) {
 }
 
 function getLastAuthenCode(pid) {
+	const settings = getSettings();
+	const topicName = 'response/latest-authen-code/' + settings.mqttTopicNam;
 	axios.get(apiUrl + '/api/nhso-service/latest-authen-code/' + pid)
 		.then((response) => {
 			console.log(response);
-			client.publish('response/latest-authen-code/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: true,
 				data: response.data
 			}))
@@ -323,7 +349,7 @@ function getLastAuthenCode(pid) {
 			// handle error
 			console.log(error);
 			const errorData = error.response.data;
-			client.publish('response/latest-authen-code/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: false,
 				message: errorData.error,
 				data: errorData.errors
@@ -335,11 +361,13 @@ function getLastAuthenCode(pid) {
 }
 
 function getApiPrefrence() {
+	const settings = getSettings();
+	const topicName = 'response/api-preference/' + settings.mqttTopicNam;
 	log('ihospital: ตรวจสอบ NHSO SmartCard Agent ทำงานหรือไม่?');
 	axios.get(apiUrl + '/api/api/preference')
 		.then((response) => {
 			log('NHSO SmartCard Agent: สถานะ ปกติ');
-			client.publish('response/api-preference/' + mqttTopicName, JSON.stringify({
+			client.publish(topicName, JSON.stringify({
 				success: true,
 				data: response.data
 			}))
@@ -351,7 +379,7 @@ function getApiPrefrence() {
 				log('iHosConnect: ไม่สามารถเชื่อมต่อกับ NHSO SmartCard Agent ได้ โปรดตรวจสอบการติดตั้งอีกครั้ง');
 			}
 			// const errorData = error.response.data;
-			// client.publish('response/api-preference/' + mqttTopicName, JSON.stringify({
+			// client.publish(topicName, JSON.stringify({
 			// 	success: false,
 			// 	message: errorData.error,
 			// 	data: errorData.errors
@@ -389,6 +417,7 @@ function log(message) {
 	windows.webContents.send('logs', message);
 	electronLog.info(message);
 }
+
 function mqttStatus(status) {
 	const win = mb.window;
 	win.webContents.send('mqttStatus', status); // 1 online, 0 offline

@@ -4,10 +4,16 @@ var mqttHostName = null;
 var mqttUsername = null;
 var mqttPassword = null;
 var mqttPort = null;
+var readImageFlag = true;
 var ipAddress = '';
 
 document.getElementById('btn-quit').addEventListener('click', () => {
 	window.electronAPI.quit();
+});
+
+document.getElementById('labelLogMessage').addEventListener('dblclick', () => {
+	const txtLog = document.getElementById('txt-log');
+	txtLog.value = '';
 });
 
 document.getElementById('btn-reset-settings').addEventListener('click', () => {
@@ -64,10 +70,12 @@ async function getSettings() {
 		document.getElementById("mqtt-password").value = settings.mqttPassword;
 		document.getElementById("mqtt-port").value = settings.mqttPort;
 		document.getElementById("mqtt-topic-name").value = settings.mqttTopicName;
+		document.getElementById("readImageFlag").checked = settings.readImageFlag;
 	} else {
 		document.getElementById("mqtt-hostname").value = 'mqtt.kkh.go.th';
 		document.getElementById("mqtt-topic-name").value = mqttTopicName;
 		document.getElementById("mqtt-port").value = 1883;
+		document.getElementById("readImageFlag").checked = true;
 	}
 	return settings;
 }
@@ -78,6 +86,7 @@ async function saveSettings() {
 	mqttPassword = document.getElementById("mqtt-password").value;
 	mqttTopicName = document.getElementById("mqtt-topic-name").value;
 	mqttPort = document.getElementById("mqtt-port").value;
+	readImageFlag = document.getElementById("readImageFlag").checked ? true : false;
 
 	if (mqttHostName && mqttUsername && mqttTopicName && mqttPort) {
 		await window.electronAPI.setSettings({
@@ -86,7 +95,8 @@ async function saveSettings() {
 			mqttUsername: mqttUsername,
 			mqttUsername: mqttUsername,
 			mqttPassword: mqttPassword,
-			mqttPort: mqttPort
+			mqttPort: mqttPort,
+			readImageFlag: readImageFlag,
 		});
 		alert('บันทึกเสร็จเรียบร้อย');
 	} else {

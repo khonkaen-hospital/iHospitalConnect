@@ -26,7 +26,7 @@
 			<div class="tabcontents">
 				<div class="tabcontent" id="tab-watch-token">
 					<div class="siimple-field">
-						<label class="siimple-label">Log message: </label><br>
+						<label id="labelLogMessage" class="siimple-label">Log message: </label><br>
 						<textarea rows="10" id="txt-log" class="siimple-textarea siimple-textarea--fluid"></textarea>
 					</div>
 					<div class="siimple-field">
@@ -43,10 +43,14 @@
 
 
 					<div class="siimple-grid-row">
-						<div class="siimple-grid-col siimple-grid-col--12">
+						<div class="siimple-grid-col siimple-grid-col--6">
 							<div class="siimple-field-label">Device ID</div>
 							<input style="text-align:center; font-weight:bold;" id="mqtt-topic-name" type="text"
 								class="siimple-input siimple-input--fluid">
+						</div>
+						<div class="siimple-grid-col siimple-grid-col--6">
+							<div class="siimple-field-label">Read Image</div>
+							<input type="checkbox" id="readImageFlag" class="siimple-input siimple-input--fluid">
 						</div>
 					</div>
 
