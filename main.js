@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { machineId, machineIdSync } = require('node-machine-id');
+const moment = require('moment');
 const mqtt = require('mqtt');
 const axios = require('axios');
 const { menubar } = require('menubar');
@@ -7,7 +8,7 @@ const path = require('path');
 const mqttTopicName = machineIdSync({ original: true });
 const electronLog = require('electron-log');
 electronLog.info('App starting...');
-const apiUrl = 'http://127.0.0.1:8189';
+const apiUrl = 'http://10.3.42.65:8189';
 var client = null;
 
 var ip = require('ip');
@@ -161,6 +162,11 @@ function startMQTT() {
 				log('subscribe request/latest-authen-code/' + settings.mqttTopicName);
 			}
 		});
+		client.subscribe('request/latest-5-authen-code-all-hospital/' + settings.mqttTopicName, { qos: 2 }, (err) => {
+			if (!err) {
+				log('subscribe request/latest-5-authen-code-all-hospital/' + settings.mqttTopicName);
+			}
+		});
 	})
 
 
@@ -191,6 +197,10 @@ function startMQTT() {
 		else if (topic === 'request/latest-authen-code/' + settings.mqttTopicName) {
 			log('ihospital: ขอตรวจสอบรายการที่ขอ authen ล่าสุด');
 			getLastAuthenCode(data.pid);
+		}
+		else if (topic === 'request/latest-5-authen-code-all-hospital/' + settings.mqttTopicName) {
+			log('ihospital: ขอตรวจสอบรายการที่ขอ authen 5 รายการล่าสุด');
+			getLast5AuthenCodeAllHospital(data.pid);
 		}
 		else if (topic === 'request/api-preference/' + settings.mqttTopicName) {
 			getApiPrefrence();
@@ -305,9 +315,9 @@ function getReadCardOnly() {
 }
 
 function getReadConfirmSave(data) {
-	console.log('confirmSave', data);
+	console.log('confirmSave:', data);
 	const settings = getSettings();
-	const topicName = 'response/confirm-save/' + settings.mqttTopicNam;
+	const topicName = 'response/confirm-save/' + settings.mqttTopicName;
 	log('NHSO SmartCard Agent: รับข้อมูลและส่งต่อขอ authen code สปสช');
 	axios.post(apiUrl + '/api/nhso-service/confirm-save', data)
 		.then((response) => {
@@ -318,25 +328,39 @@ function getReadConfirmSave(data) {
 				data: response.data
 			}))
 		})
-		.catch((error) => {
-			// handle errorg
+		.catch(async (error) => {
 			console.log(error);
-			const errorData = error?.response?.data;
-			log('NHSO SmartCard Agent: Authen ไม่สำเร็จ ส่งข้อมูลกลับไปให้ ihospital');
-			client.publish(topicName, JSON.stringify({
-				success: false,
-				message: errorData?.error || error?.message,
-				data: errorData?.errors
-			}))
+			const result = await _getLast5AuthenCodeAllHospital(data.pid);
+			if (result.data?.length > 0) {
+				log('NHSO SmartCard Agent: มีรายการขอ authen code แล้วส่งรหัสเดิมกลับคืนให้ iHospital');
+				const claimData = result.data.find(f => f.claimType === data.claimType && moment(f.claimDateTime).format('YYYY-MM-DD') === moment().format('YYYY-MM-DD'));
+				if (claimData) {
+					client.publish(topicName, JSON.stringify({
+						success: true,
+						data: claimData
+					}))
+				}
+			} else {
+				log('NHSO SmartCard Agent: Authen ไม่สำเร็จ ส่งข้อมูลกลับไปให้ ihospital');
+				const errorData = error?.response?.data;
+				const message = (errorData?.error || error?.message);
+				client.publish(topicName, JSON.stringify({
+					success: false,
+					message: message,
+					data: errorData?.errors
+				}));
+				log('NHSO SmartCard Agent: error: ' + message);
+			}
 		})
 		.finally(() => {
+			log('topic:' + topicName);
 			// always executed
 		});
 }
 
 function getLastAuthenCode(pid) {
 	const settings = getSettings();
-	const topicName = 'response/latest-authen-code/' + settings.mqttTopicNam;
+	const topicName = 'response/latest-authen-code/' + settings.mqttTopicName;
 	axios.get(apiUrl + '/api/nhso-service/latest-authen-code/' + pid)
 		.then((response) => {
 			console.log(response);
@@ -360,9 +384,39 @@ function getLastAuthenCode(pid) {
 		});
 }
 
+function _getLast5AuthenCodeAllHospital(pid) {
+	return axios.get(apiUrl + '/api/nhso-service/latest-5-authen-code-all-hospital/' + pid);
+}
+
+function getLast5AuthenCodeAllHospital(pid) {
+	const settings = getSettings();
+	const topicName = 'response/latest-5-authen-code-all-hospital/' + settings.mqttTopicName;
+	axios.get(apiUrl + '/api/nhso-service/latest-5-authen-code-all-hospital/' + pid)
+		.then((response) => {
+			console.log('latest-5-authen-code-all-hospital', response);
+			client.publish(topicName, JSON.stringify({
+				success: true,
+				data: response.data
+			}))
+		})
+		.catch((error) => {
+			// handle error
+			console.log(error);
+			const errorData = error.response.data;
+			client.publish(topicName, JSON.stringify({
+				success: false,
+				message: errorData.error,
+				data: errorData.errors
+			}))
+		})
+		.finally(() => {
+			// always executed
+		});
+}
+
 function getApiPrefrence() {
 	const settings = getSettings();
-	const topicName = 'response/api-preference/' + settings.mqttTopicNam;
+	const topicName = 'response/api-preference/' + settings.mqttTopicName;
 	log('ihospital: ตรวจสอบ NHSO SmartCard Agent ทำงานหรือไม่?');
 	axios.get(apiUrl + '/api/api/preference')
 		.then((response) => {
